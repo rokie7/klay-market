@@ -59,7 +59,6 @@ function App() {
 
   }
 
-
   //fetchMyNFTs
   const fetchMyNFTs = async () =>  {
     if(myAddress ===DEFAULT_ADDRESS) {
@@ -68,7 +67,7 @@ function App() {
     }
     const _nfts = await fetchCardsOf(myAddress);
     //const _nfts = await fetchCardsOf("0x70814F8dA1dFA290b69D636406634784D94D2508");
-    
+    //test
     setNfts(_nfts);
     console.log('fetchMyNFTs  실행완료');
     //1.tokenOfOwnerByIndex -> 내가가진 NFT tokenID를 하나씩 가져온다. 
