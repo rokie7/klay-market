@@ -13,6 +13,7 @@ import { Alert, Button, Card, Container, Form, Nav, Modal, Row, Col } from 'reac
 import "./market.css";
 import { MARKET_CONTRACT_ADDRESS } from './constants';
 import IpfsApi from 'ipfs-api';
+import { getIPFSHash } from './api/UseIPFS';
 // 1.start contract 배포주소 파악(가져오기)
 // 2.caver.js이용해서 스마트 컨트렉트 연동하기
 // 3.가져온 스마트 컨트렉트 실험결과(데이터) 웹에 포현하기
@@ -30,11 +31,11 @@ function App() {
   const [qrvalue,setQrvalue] = useState(DEFAULT_QR_CODE);
   const [tab, setTab] =useState('MARKET');  //MARKET, MINT, WALLET
   
-  const [mintBookTitle, setMintBookTitle] = useState("책이름");   //책이름
+  const [mintBookTitle, setMintBookTitle] = useState("");   //책이름
   const [mintImageUrl, setMintImageUrl] = useState(""); //썸네일
   const [mintTokenID, setMintTokenID] = useState("");   //토큰id
   const [mintBookUrl, setMintBookUrl] = useState("");   //책PDF파일
-  const [mintDesc, setMintDesc] = useState("");   //책PDF파일
+  const [mintDesc, setMintDesc] = useState("");   //책설명
 
 
   //Modal
@@ -173,6 +174,37 @@ function App() {
   const onClickgetAddress = () => {
     KlipAPI.getAddress(setQrvalue);
   }
+
+  //파일선택시 해당파일을 IPFS로 업로드하여 해쉬값을 받아온다.
+  const captureFile = async (event) => {
+    event.preventDefault();
+    const file = event.target.files[0];
+    const title = event.target.title;
+
+    if(file === undefined) {
+      alert('파일이없습니다.');
+      return;
+    } 
+    console.log(`file : ${file}`);
+    const hash = await getIPFSHash(file);
+    
+    //썸네일과 책PDF파일의 해쉬값을 각각 저장
+    if(title === 'img') {
+      setMintImageUrl(hash);
+    } else{
+      setMintBookUrl(hash);
+    }
+    
+    console.log(`IPFS Hash값 : ${hash}`);
+  
+  
+  }
+
+  const test11 = async (event) => {
+    const title = event.target.title;
+    console.log(title);
+  }
+
 /*
   const onClickSetCount = () => {
     console.log("1111-");
@@ -270,28 +302,20 @@ useEffect(()=>{
         <br/><br/><br/><br/><br/>
        {tab === "MINT" ? (
        <div className="container" style={{padding:0, width:"100%"}}>
-          <Card className="text-center" style={{color : "black", height:"50%",borderColor:"#C5B358"}}>
+         
+          <Card className="text-center" style={{color : "white", height:"50%",borderColor:"#C5B358"}}>
             <Card.Body style={{opacity:0.9, backgroundColor:"black"}}>
-              {mintImageUrl !== "" ? <Card.Img src={mintImageUrl} style={{color : "black", height:"200px",width:"200px"}}/> : null}
+            <h1>썸네일 선택</h1>
+            <br/>
+              {mintImageUrl !== "" ? <Card.Img src={`https://gateway.ipfs.io/ipfs/${mintImageUrl}`} style={{color : "black", height:"200px",width:"200px"}}/> : null}
               <Form>
                 <Form.Group>
+                
+                  <input type='file' title='img' onChange={captureFile} ></input>
+
+                  <h1>책PDF파일 선택</h1><br/>
+                  <input type='file' title='bookpdf' onChange={captureFile} ></input>
                   
-                  <Form.Control value={mintImageUrl} onChange={(e)=>{
-                      console.log(e.target.value);
-                      setMintImageUrl(e.target.value);
-                  }}
-                  type="text"
-                  placeholder='썸네일 주소를 입력해주세요'
-                  />
-
-                  <Form.Control value={mintTokenID} onChange={(e)=>{
-                      console.log(e.target.value);
-                      setMintTokenID(e.target.value);
-                  }}
-                  type="text"
-                  placeholder='토큰ID를 입력해주세요'
-                  />
-
                   <Form.Control value={mintBookTitle} onChange={(e)=>{
                       console.log(e.target.value);
                       setMintBookTitle(e.target.value);
@@ -300,12 +324,12 @@ useEffect(()=>{
                   placeholder='발행할 책이름을 입력해주세요'
                   />
 
-                  <Form.Control value={mintBookUrl} onChange={(e)=>{
+                  <Form.Control value={mintTokenID} onChange={(e)=>{
                       console.log(e.target.value);
-                      setMintBookUrl(e.target.value);
+                      setMintTokenID(e.target.value);
                   }}
                   type="text"
-                  placeholder='책 PDF파일링크를 넣어주세요'
+                  placeholder='토큰ID를 입력해주세요'
                   />
 
                   <Form.Control value={mintDesc} onChange={(e)=>{
